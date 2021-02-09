@@ -1,5 +1,5 @@
 
-const G = 6.67 * (10 ^ -11);
+const G = 6.67 * (10 ** 0);
 const interval = 10;
 let gameover = false;
 // const refresh = 1000;
@@ -139,7 +139,7 @@ class Body {
             }
             //万有引力
             // F = G * ((M * m) / r^2)
-            let r = this.site.vsub(others[i].site); //destination - origin
+            let r = others[i].site.vsub(this.site); //destination - origin
             let forceValue = G * (this.quality * others[i].quality) / r.square();
             let force = r.normalize().mul(forceValue);  //合外力=力的方向*力的值
             allForces = allForces.vadd(force);
@@ -281,7 +281,7 @@ class Universe {
 // 创建宇宙
 let body1 = new Body("天体-1", new Vector(-150, 0, 0), 10, new Vector(0, 0.4, 0), 0xf64024);
 let body2 = new Body("天体-2", new Vector(150, 0, 0), 10, new Vector(0, -0.6, 0), 0xe65f09);
-let body3 = new Body("天体-3", new Vector(40, 20, 80), 5, new Vector(0, 0.6, -0.4), 0x440bfc);
+let body3 = new Body("天体-3", new Vector(40, 20, 80), 5, new Vector(-0.4, 0, -0.4), 0x440bfc);
 
 //创建宇宙
 let universe1 = new Universe(new Array(body1, body2, body3));
