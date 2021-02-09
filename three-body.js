@@ -1,6 +1,6 @@
 
 const G = 6.67 * (10 ^ -11);
-// const interval = 1000;
+const interval = 10;
 // const refresh = 1000;
 //向量
 class Vector {
@@ -42,7 +42,10 @@ class Vector {
         return new Vector(-this.x, -this.y, -this.z);
     }
 
-
+    normalize() {
+        let mod = (this.x * this.x + this.y * this.y + this.z * this.z) ** 0.5;
+        return this.div(mod);
+    }
 
     square() {
         let x = this.x * this.x;
@@ -86,7 +89,8 @@ class Body {
 
         //位置 = 位置 + 速度/dt
         this.site = this.site.vadd(this.speed);
-        // console.log("天体" + this.name + "位置:", this.obj.position);
+        if (this.name == "天体-1")
+            console.log("天体" + this.name + "位置:", this.obj.position, "受力:", this.force);
     }
 
     //碰撞检查
@@ -120,7 +124,7 @@ class Body {
             // F = G * ((M * m) / r^2)
             let r = this.site.vsub(others[i].site); //destination - origin
             let forceValue = G * (this.quality * others[i].quality) / r.square();
-            let force = r.mul(forceValue);
+            let force = r.normalize().mul(forceValue);  //合外力=力的方向*力的值
             allForces = allForces.vadd(force);
         }
         this.force = allForces;
@@ -130,8 +134,8 @@ class Body {
         let ret = this.checkCollision(others);
         if (ret != null) {
             //若发生碰撞，不分析受力情况，天体不一定
-            this.speed = new Vector(0, 0, 0);
-            this.force = new Vector(0, 0, 0)
+            // this.speed = new Vector(0, 0, 0);
+            this.force = new Vector(0, 0, 0);
             // this.force = this.force.div(4);
             return;
         }
@@ -152,19 +156,20 @@ class Universe {
     }
 
     render(timestamp) {
-        //计算进程
-        //更新所有天体状态
-        this.bodys.forEach(body => {
-            body.calculateForce(this.bodys);  //计算天体合外力
-            body.moveDiv();             //更新天体状态
-        })
-
         this.bodys.forEach(body => {
             body.render()
         })
 
         this.renderer.render(this.scene, this.camera);
         requestAnimationFrame(this.render.bind(this));
+    }
+
+    autoCamera() {
+        let result = new Vector(0, 0, 0);
+        this.bodys.forEach(body => {
+            result = result.vadd(body.site);
+        });
+        result = result.div(3);
     }
 
     mouseControl() {
@@ -205,7 +210,7 @@ class Universe {
 
     init() {
         this.scene = new THREE.Scene();
-        this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
 
         this.renderer = new THREE.WebGLRenderer({
             antialias: true,   // 抗锯齿
@@ -223,6 +228,15 @@ class Universe {
     }
 
     start() {
+        setInterval(() => {
+            //计算进程
+            //更新所有天体状态
+            this.bodys.forEach(body => {
+                body.calculateForce(this.bodys);  //计算天体合外力
+                body.moveDiv();             //更新天体状态
+            })
+
+        }, 20)
         //绘画进程
         requestAnimationFrame(this.render.bind(this));
     }
@@ -231,11 +245,11 @@ class Universe {
 
 // main
 // 创建宇宙
-let body1 = new Body("天体-1", new Vector(100, 0, 0), 2, new Vector(1, 3, 0), 0xff0000);
-let body2 = new Body("天体-2", new Vector(100, 100, 0), 5, new Vector(2, 0, 0), 0x00ff00);
-let body3 = new Body("天体-3", new Vector(0, 0, 100), 4, new Vector(2, 0, 0), 0x0000ff);
+let body1 = new Body("天体-1", new Vector(-50, 0, 0), 5, new Vector(0, 0, 0), 0xff0000);
+let body2 = new Body("天体-2", new Vector(50, 0, 0), 5, new Vector(0, 0, 0), 0x00ff00);
+// let body3 = new Body("天体-3", new Vector(0, 0, 100), 4, new Vector(2, 1, 0), 0x0000ff);
 
 //创建宇宙
-let universe1 = new Universe(new Array(body1, body2, body3));
+let universe1 = new Universe(new Array(body1, body2));
 universe1.init();
 universe1.start();
