@@ -163,6 +163,9 @@ class Body {
     }
 
     render() {
+        if (gameover) {
+            return;
+        }
         Object.assign(this.obj.position, this.site);
         this.obj.rotation.y += 0.01;
 
@@ -281,7 +284,7 @@ class Universe {
 // 创建宇宙
 let body1 = new Body("天体-1", new Vector(-150, 0, 0), 10, new Vector(0, 0.4, 0), 0xf64024);
 let body2 = new Body("天体-2", new Vector(150, 0, 0), 10, new Vector(0, -0.6, 0), 0xe65f09);
-let body3 = new Body("天体-3", new Vector(40, 20, 80), 5, new Vector(-0.4, 0, -0.4), 0x440bfc);
+let body3 = new Body("天体-3", new Vector(40, 20, 20), 5, new Vector(-0.4, 0, -0.5), 0x440bfc);
 
 //创建宇宙
 let universe1 = new Universe(new Array(body1, body2, body3));
