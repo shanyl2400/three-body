@@ -1,6 +1,7 @@
 
 const G = 6.67 * (10 ^ -11);
 const interval = 10;
+let gameover = false;
 // const refresh = 1000;
 //向量
 class Vector {
@@ -69,10 +70,13 @@ class Body {
         this.quality = quality;
         this.speed = speed;
         this.color = color;
+        this.lineBuf = [];
         this.createObj();
+        this.createLine();
     }
-    createObj() {
 
+    //创建星球体
+    createObj() {
         var geometry = new THREE.SphereGeometry(this.size, this.size, this.size);
         var material = new THREE.MeshBasicMaterial({ color: this.color });
         var obj = new THREE.Mesh(geometry, material);
@@ -80,6 +84,18 @@ class Body {
         this.obj = obj;
         Object.assign(this.obj.position, this.site);
     }
+
+    //运行轨迹
+    createLine() {
+        let _material = new THREE.LineBasicMaterial({
+            color: this.color
+        });
+        this.lineGeometry = new THREE.BufferGeometry();
+        var _vertices = new Float32Array(this.lineBuf);
+        this.lineGeometry.addAttribute('position', new THREE.BufferAttribute(_vertices, 3));
+        this.line = new THREE.Line(this.lineGeometry, _material);
+    }
+
     //单位时间位移
     moveDiv() {
         //计算加速度
@@ -89,8 +105,9 @@ class Body {
 
         //位置 = 位置 + 速度/dt
         this.site = this.site.vadd(this.speed);
-        if (this.name == "天体-1")
-            console.log("天体" + this.name + "位置:", this.obj.position, "受力:", this.force);
+        // if (this.name == "天体-1")
+        // console.log("天体" + this.name + "位置:", this.obj.position, "受力:", this.force);
+        // console.log("天体" + this.name + "位置:", this.obj.position, "受力:", this.force);
     }
 
     //碰撞检查
@@ -134,9 +151,13 @@ class Body {
         let ret = this.checkCollision(others);
         if (ret != null) {
             //若发生碰撞，不分析受力情况，天体不一定
-            // this.speed = new Vector(0, 0, 0);
+            this.speed = new Vector(0, 0, 0);
             this.force = new Vector(0, 0, 0);
             // this.force = this.force.div(4);
+            if (!gameover) {
+                alert("发生了碰撞");
+                gameover = true;
+            }
             return;
         }
     }
@@ -144,6 +165,18 @@ class Body {
     render() {
         Object.assign(this.obj.position, this.site);
         this.obj.rotation.y += 0.01;
+
+        //轨迹
+        if (this.lineBuf.length > 1000 * 3) {
+            this.lineBuf.shift();
+            this.lineBuf.shift();
+            this.lineBuf.shift();
+        }
+        if (this.name == "天体-1")
+            console.log(this.lineBuf)
+        this.lineBuf.push(this.site.x, this.site.y, this.site.z)
+        let _vertices = new Float32Array(this.lineBuf)
+        this.lineGeometry.addAttribute('position', new THREE.BufferAttribute(_vertices, 3));
     }
 }
 
@@ -157,20 +190,20 @@ class Universe {
 
     render(timestamp) {
         this.bodys.forEach(body => {
-            body.render()
+            body.render();
         })
 
         this.renderer.render(this.scene, this.camera);
         requestAnimationFrame(this.render.bind(this));
     }
 
-    autoCamera() {
-        let result = new Vector(0, 0, 0);
-        this.bodys.forEach(body => {
-            result = result.vadd(body.site);
-        });
-        result = result.div(3);
-    }
+    // autoCamera() {
+    //     let result = new Vector(0, 0, 0);
+    //     this.bodys.forEach(body => {
+    //         result = result.vadd(body.site);
+    //     });
+    //     result = result.div(3);
+    // }
 
     mouseControl() {
         let camera = this.camera;
@@ -181,7 +214,7 @@ class Universe {
             startY = event.clientY;
             isDown = true;
         };
-        document.onmouseup = function (event) {
+        document.onmouseup = function () {
             isDown = false;
         };
         document.onmousemove = function (event) {
@@ -220,6 +253,7 @@ class Universe {
 
         this.bodys.forEach(body => {
             this.scene.add(body.obj);
+            this.scene.add(body.line);
         })
 
         this.camera.position.z = 500;
@@ -236,7 +270,7 @@ class Universe {
                 body.moveDiv();             //更新天体状态
             })
 
-        }, 20)
+        }, 10)
         //绘画进程
         requestAnimationFrame(this.render.bind(this));
     }
@@ -245,11 +279,11 @@ class Universe {
 
 // main
 // 创建宇宙
-let body1 = new Body("天体-1", new Vector(-50, 0, 0), 5, new Vector(0, 0, 0), 0xff0000);
-let body2 = new Body("天体-2", new Vector(50, 0, 0), 5, new Vector(0, 0, 0), 0x00ff00);
-// let body3 = new Body("天体-3", new Vector(0, 0, 100), 4, new Vector(2, 1, 0), 0x0000ff);
+let body1 = new Body("天体-1", new Vector(-150, 0, 0), 10, new Vector(0, 0.4, 0), 0xf64024);
+let body2 = new Body("天体-2", new Vector(150, 0, 0), 10, new Vector(0, -0.6, 0), 0xe65f09);
+let body3 = new Body("天体-3", new Vector(40, 20, 80), 5, new Vector(0, 0.6, -0.4), 0x440bfc);
 
 //创建宇宙
-let universe1 = new Universe(new Array(body1, body2));
+let universe1 = new Universe(new Array(body1, body2, body3));
 universe1.init();
 universe1.start();
