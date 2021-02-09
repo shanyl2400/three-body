@@ -107,7 +107,7 @@ class Body {
         this.site = this.site.vadd(this.speed);
         // if (this.name == "天体-1")
         // console.log("天体" + this.name + "位置:", this.obj.position, "受力:", this.force);
-        // console.log("天体" + this.name + "位置:", this.obj.position, "受力:", this.force);
+        console.log("天体" + this.name + "位置:", this.obj.position, "受力:", this.force);
     }
 
     //碰撞检查
@@ -167,7 +167,7 @@ class Body {
         this.obj.rotation.y += 0.01;
 
         //轨迹
-        if (this.lineBuf.length > 1000 * 3) {
+        if (this.lineBuf.length > 500 * 3) {
             this.lineBuf.shift();
             this.lineBuf.shift();
             this.lineBuf.shift();
