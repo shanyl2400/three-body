@@ -75,7 +75,8 @@ class Body {
         this.createLine();
 
         this.rendCount = 0;
-        this.threshold = 10;
+        this.lineThreshold = 10;
+        this.printThreshold = 200;
     }
 
     //创建星球体
@@ -95,7 +96,7 @@ class Body {
         });
         this.lineGeometry = new THREE.BufferGeometry();
         var _vertices = new Float32Array(this.lineBuf);
-        this.lineGeometry.addAttribute('position', new THREE.BufferAttribute(_vertices, 3));
+        this.lineGeometry.setAttribute('position', new THREE.BufferAttribute(_vertices, 3));
         this.line = new THREE.Line(this.lineGeometry, _material);
     }
 
@@ -108,9 +109,6 @@ class Body {
 
         //位置 = 位置 + 速度/dt
         this.site = this.site.vadd(this.speed);
-        // if (this.name == "天体-1")
-        // console.log("天体" + this.name + "位置:", this.obj.position, "受力:", this.force);
-        console.log("天体" + this.name + "位置:", this.obj.position, "受力:", this.force);
     }
 
     //碰撞检查
@@ -173,17 +171,21 @@ class Body {
         this.obj.rotation.y += 0.01;
 
         this.rendCount++;
-        if (this.rendCount == this.threshold) {
-            this.rendCount = 0;
+        if (this.rendCount % this.lineThreshold == 0) {
+            //打印天体位置
+            if (this.rendCount % this.printThreshold == 0) {
+                console.log("天体" + this.name + "位置:", this.obj.position, "受力:", this.force);
+            }
+
             //轨迹
-            if (this.lineBuf.length > 500 * 3) {
+            if (this.lineBuf.length > 100 * 3) {
                 this.lineBuf.shift();
                 this.lineBuf.shift();
                 this.lineBuf.shift();
             }
             this.lineBuf.push(this.site.x, this.site.y, this.site.z)
             let _vertices = new Float32Array(this.lineBuf)
-            this.lineGeometry.addAttribute('position', new THREE.BufferAttribute(_vertices, 3));
+            this.lineGeometry.setAttribute('position', new THREE.BufferAttribute(_vertices, 3));
         }
 
     }
@@ -217,14 +219,6 @@ class Universe {
         this.renderer.render(this.scene, this.camera);
         requestAnimationFrame(this.render.bind(this));
     }
-
-    // autoCamera() {
-    //     let result = new Vector(0, 0, 0);
-    //     this.bodys.forEach(body => {
-    //         result = result.vadd(body.site);
-    //     });
-    //     result = result.div(3);
-    // }
 
     mouseControl() {
         let camera = this.camera;
@@ -291,9 +285,9 @@ class Universe {
 
 // main
 // 创建宇宙
-let body1 = new Body("天体-1", new Vector(-150, 0, 0), 10, new Vector(0, 0.04, 0), 0xf64024);
-let body2 = new Body("天体-2", new Vector(150, 0, 0), 10, new Vector(0, -0.05, 0), 0xe65f09);
-let body3 = new Body("天体-3", new Vector(0, 120, 120), 4, new Vector(-0.06, 0, 0), 0x440bfc);
+let body1 = new Body("天体-1", new Vector(-150, 0, 0), 8.6, new Vector(0, 0.04, 0), 0xf64024);
+let body2 = new Body("天体-2", new Vector(150, 0, 0), 12.2, new Vector(0, -0.05, 0), 0xdfd819);
+let body3 = new Body("天体-3", new Vector(0, 10, 120), 2.8, new Vector(0, 0.001, 0), 0x440bfc);
 
 //创建宇宙
 let universe1 = new Universe(new Array(body1, body2, body3));
