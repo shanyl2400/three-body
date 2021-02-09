@@ -73,6 +73,9 @@ class Body {
         this.lineBuf = [];
         this.createObj();
         this.createLine();
+
+        this.rendCount = 0;
+        this.threshold = 10;
     }
 
     //创建星球体
@@ -169,17 +172,20 @@ class Body {
         Object.assign(this.obj.position, this.site);
         this.obj.rotation.y += 0.01;
 
-        //轨迹
-        if (this.lineBuf.length > 500 * 3) {
-            this.lineBuf.shift();
-            this.lineBuf.shift();
-            this.lineBuf.shift();
+        this.rendCount++;
+        if (this.rendCount == this.threshold) {
+            this.rendCount = 0;
+            //轨迹
+            if (this.lineBuf.length > 500 * 3) {
+                this.lineBuf.shift();
+                this.lineBuf.shift();
+                this.lineBuf.shift();
+            }
+            this.lineBuf.push(this.site.x, this.site.y, this.site.z)
+            let _vertices = new Float32Array(this.lineBuf)
+            this.lineGeometry.addAttribute('position', new THREE.BufferAttribute(_vertices, 3));
         }
-        if (this.name == "天体-1")
-            console.log(this.lineBuf)
-        this.lineBuf.push(this.site.x, this.site.y, this.site.z)
-        let _vertices = new Float32Array(this.lineBuf)
-        this.lineGeometry.addAttribute('position', new THREE.BufferAttribute(_vertices, 3));
+
     }
 }
 
@@ -261,7 +267,7 @@ class Universe {
         this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
 
         this.renderer = new THREE.WebGLRenderer({
-            antialias: true,   // 抗锯齿
+            antialias: false,   // 抗锯齿
         });
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(this.renderer.domElement);
@@ -286,8 +292,8 @@ class Universe {
 // main
 // 创建宇宙
 let body1 = new Body("天体-1", new Vector(-150, 0, 0), 10, new Vector(0, 0.04, 0), 0xf64024);
-let body2 = new Body("天体-2", new Vector(150, 0, 0), 10, new Vector(0, -0.04, 0), 0xe65f09);
-let body3 = new Body("天体-3", new Vector(0, 120, 120), 2, new Vector(-0.04, 0, 0), 0x440bfc);
+let body2 = new Body("天体-2", new Vector(150, 0, 0), 10, new Vector(0, -0.05, 0), 0xe65f09);
+let body3 = new Body("天体-3", new Vector(0, 120, 120), 4, new Vector(-0.06, 0, 0), 0x440bfc);
 
 //创建宇宙
 let universe1 = new Universe(new Array(body1, body2, body3));
