@@ -1,6 +1,6 @@
 
-const G = 6.67 * (10 ** 0);
-const interval = 10;
+const G = 6.67 * (10 ** -2);
+const accuracy = 1;
 let gameover = false;
 // const refresh = 1000;
 //向量
@@ -153,7 +153,7 @@ class Body {
             //若发生碰撞，不分析受力情况，天体不一定
             this.speed = new Vector(0, 0, 0);
             this.force = new Vector(0, 0, 0);
-            // this.force = this.force.div(4);
+            this.force = this.force.div(4);
             if (!gameover) {
                 alert("发生了碰撞");
                 gameover = true;
@@ -186,12 +186,24 @@ class Body {
 class Universe {
     constructor(bodys) {
         this.bodys = bodys;
+        this.lastTimestamp = 0;
     }
     addBody(body) {
         this.bodys = this.bodys.concat(body);
     }
 
     render(timestamp) {
+        let timeDiff = timestamp - this.lastTimestamp;
+        this.lastTimestamp = timestamp;
+        //计算进程
+        //更新所有天体状态
+        for (let i = 0; i < timeDiff * accuracy; i++) {
+            this.bodys.forEach(body => {
+                body.calculateForce(this.bodys);  //计算天体合外力
+                body.moveDiv();             //更新天体状态
+            });
+        }
+
         this.bodys.forEach(body => {
             body.render();
         })
@@ -265,15 +277,6 @@ class Universe {
     }
 
     start() {
-        setInterval(() => {
-            //计算进程
-            //更新所有天体状态
-            this.bodys.forEach(body => {
-                body.calculateForce(this.bodys);  //计算天体合外力
-                body.moveDiv();             //更新天体状态
-            })
-
-        }, 10)
         //绘画进程
         requestAnimationFrame(this.render.bind(this));
     }
@@ -282,9 +285,9 @@ class Universe {
 
 // main
 // 创建宇宙
-let body1 = new Body("天体-1", new Vector(-150, 0, 0), 10, new Vector(0, 0.4, 0), 0xf64024);
-let body2 = new Body("天体-2", new Vector(150, 0, 0), 10, new Vector(0, -0.6, 0), 0xe65f09);
-let body3 = new Body("天体-3", new Vector(40, 20, 20), 5, new Vector(-0.4, 0, -0.5), 0x440bfc);
+let body1 = new Body("天体-1", new Vector(-150, 0, 0), 10, new Vector(0, 0.04, 0), 0xf64024);
+let body2 = new Body("天体-2", new Vector(150, 0, 0), 10, new Vector(0, -0.04, 0), 0xe65f09);
+let body3 = new Body("天体-3", new Vector(0, 120, 120), 2, new Vector(-0.04, 0, 0), 0x440bfc);
 
 //创建宇宙
 let universe1 = new Universe(new Array(body1, body2, body3));
